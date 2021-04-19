@@ -12,7 +12,7 @@ class HelloResp(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "Hello World!"}
+    return {"message": "Hello world!"}
 
 
 @app.get("/hello/{name}")
