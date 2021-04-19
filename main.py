@@ -40,7 +40,7 @@ def hello_name_view(name: str):
 @app.get("/counter")
 def counter():
     app.counter += 1
-    return app.counter
+    surname = patient_info.surname,
 
 
 @app.get("/method")
@@ -93,3 +93,12 @@ def patient_register(patient_info: PatientInfo):
     )
     app.mock_db[app.patient_id] = patient
     return patient
+
+
+@app.get("/patient/{id}", response_model=PatientData)
+def patient_view(id: int):
+    if id < 1:
+        return Response(status_code=400)
+    if id in app.mock_db:
+        return app.mock_db[id]
+    return Response(status_code=404)
