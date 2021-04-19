@@ -81,8 +81,9 @@ def auth_view(password: Optional[str] = Query(None), password_hash: Optional[str
 def patient_register(patient_info: PatientInfo):
     app.patient_id += 1
     register_date = date.today()
-    vaccination_date = register_date + \
-        timedelta(days=len(patient_info.name) + len(patient_info.surname))
+    letters_in_names = sum(1 for _ in filter(
+        str.isalpha, patient_info.name + patient_info.surname))
+    vaccination_date = register_date + timedelta(days=letters_in_names)
     patient = PatientData(
         id=app.patient_id,
         name=patient_info.name,
