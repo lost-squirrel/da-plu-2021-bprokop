@@ -22,6 +22,11 @@ class PatientData(BaseModel):
     vaccination_date: date
 
 
+class PatientInfo(BaseModel):
+    name: str
+    surname: str
+
+
 @app.get("/")
 def root():
     return {"message": "Hello world!"}
@@ -63,7 +68,7 @@ def method_post(request: Request):
     return {"method": request.method}
 
 
-@ app.get("/auth")
+@app.get("/auth")
 def auth_view(password: Optional[str] = Query(None), password_hash: Optional[str] = Query(None)):
     if password and password_hash and password.strip() and password_hash.strip():
         calculated_hash = sha512(password.encode()).hexdigest()
@@ -72,15 +77,16 @@ def auth_view(password: Optional[str] = Query(None), password_hash: Optional[str
     return Response(status_code=401)
 
 
-@ app.post("/register", status_code=201, response_model=PatientData)
-def patient_register(name: str = '', surname: str = ''):
+@app.post("/register", status_code=201, response_model=PatientData)
+def patient_register(patient_info: PatientInfo):
     app.patient_id += 1
     register_date = date.today()
-    vaccination_date = register_date + timedelta(days=len(name) + len(surname))
+    vaccination_date = register_date + \
+        timedelta(days=len(patient_info.name) + len(patient_info.surname))
     patient = PatientData(
         id=app.patient_id,
-        name=name,
-        surname=surname,
+        name=patient_info.name,
+        surname=patient_info.surname,
         register_date=register_date,
         vaccination_date=vaccination_date
     )
