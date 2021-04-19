@@ -73,7 +73,7 @@ def auth_view(password: Optional[str] = Query(None), password_hash: Optional[str
 
 
 @ app.post("/register", status_code=201, response_model=PatientData)
-def patient_register(name: str, surname: str):
+def patient_register(name: str = '', surname: str = ''):
     app.patient_id += 1
     register_date = date.today()
     vaccination_date = register_date + timedelta(days=len(name) + len(surname))
