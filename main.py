@@ -15,7 +15,7 @@ class HelloResp(BaseModel):
 
 
 class PatientData(BaseModel):
-    pid: int
+    id: int
     name: str
     surname: str
     register_date: date
@@ -78,7 +78,7 @@ def patient_register(name: str, surname: str):
     register_date = date.today()
     vaccination_date = register_date + timedelta(days=len(name) + len(surname))
     patient = PatientData(
-        pid=app.patient_id,
+        id=app.patient_id,
         name=name,
         surname=surname,
         register_date=register_date,
