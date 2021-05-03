@@ -1,5 +1,6 @@
 import secrets
 from fastapi import FastAPI, Request, HTTPException, Query, Response, Depends, Cookie, status
+from fastapi.responses import PlainTextResponse, HTMLResponse
 from typing import Optional
 from hashlib import sha256, sha512
 from pydantic import BaseModel
@@ -11,8 +12,8 @@ app = FastAPI()
 security = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
 app.secret_key = "veri sikret key"
-app.session = ""
-app.token = ""
+app.session = None
+app.token = None
 app.counter = 0
 app.patient_id = 0
 app.mock_db = {}
@@ -72,6 +73,43 @@ def get_session_token():
     token = secrets.token_urlsafe()
     app.token = token
     return {"token": token}
+
+
+def generate_welcome_response(format):
+    if format == "json":
+        return {"message": "Welcome!"}
+    elif format == "html":
+        html_content = """
+        <html>
+            <head>
+                <title</title>
+            </head>
+            <body>
+                <h1>Welcome!</h1>
+            </body>
+        </html>
+            """
+        return HTMLResponse(content=html_content, status_code=200)
+    else:
+        return PlainTextResponse(content="Welcome!")
+
+
+@app.get("/welcome_session")
+def welcome_session_view(session_token: Optional[str] = Cookie(None), format: Optional[str] = None):
+    if app.session and session_token and secrets.compare_digest(app.session, session_token):
+        return generate_welcome_response(format)
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Unauthorized")
+
+
+@app.get("/welcome_token")
+def welcome_token_view(token: Optional[str] = None, format: Optional[str] = None):
+    if app.token and token and secrets.compare_digest(app.token, token):
+        return generate_welcome_response(format)
+    else:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Unauthorized")
 
 
 @app.get("/hello/{name}")
