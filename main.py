@@ -62,8 +62,7 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
 
 @app.post("/login_session", status_code=201)
 def create_session_cookie(response: Response, user=Depends(verify_credentials)):
-    session_token = sha256(
-        f"{user['name']}{user['password']}{app.secret_key}".encode()).hexdigest()
+    session_token = secrets.token_urlsafe()
     app.session = session_token
     response.set_cookie(key="session_token", value=session_token)
 
@@ -100,7 +99,7 @@ def welcome_session_view(session_token: Optional[str] = Cookie(None), format: Op
         return generate_welcome_response(format)
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Unauthorized")
+                            detail="Unauthorized session")
 
 
 @app.get("/welcome_token")
@@ -109,7 +108,7 @@ def welcome_token_view(token: Optional[str] = None, format: Optional[str] = None
         return generate_welcome_response(format)
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Unauthorized")
+                            detail="Unauthorized token")
 
 
 @app.get("/hello/{name}")
