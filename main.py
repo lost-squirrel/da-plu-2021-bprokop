@@ -3,8 +3,10 @@ from typing import Optional
 from hashlib import sha512
 from pydantic import BaseModel
 from datetime import date, timedelta
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 app.counter = 0
 app.patient_id = 0
 app.mock_db = {}
@@ -30,6 +32,11 @@ class PatientInfo(BaseModel):
 @app.get("/")
 def root():
     return {"message": "Hello world!"}
+
+
+@app.get("/hello")
+def plain_hello_view(request: Request):
+    return templates.TemplateResponse("hello.html.j2", {"date": date.today(), "request": request})
 
 
 @app.get("/hello/{name}")
