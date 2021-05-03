@@ -62,14 +62,15 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
 
 @app.post("/login_session", status_code=201)
 def create_session_cookie(response: Response, user=Depends(verify_credentials)):
-    session_token = secrets.token_urlsafe()
+    session_token = "token1234"
     app.session = session_token
     response.set_cookie(key="session_token", value=session_token)
+    return {"user": user["name"]}
 
 
-@app.post("/login_token", dependencies=[Depends(verify_credentials)], status_code=201)
-def get_session_token():
-    token = secrets.token_urlsafe()
+@app.post("/login_token", status_code=201)
+def get_session_token(response: Response, user=Depends(verify_credentials)):
+    token = "token1234"
     app.token = token
     return {"token": token}
 
@@ -90,7 +91,7 @@ def generate_welcome_response(format):
             """
         return HTMLResponse(content=html_content, status_code=200)
     else:
-        return PlainTextResponse(content="Welcome!")
+        return PlainTextResponse(content="Welcome!", status_code=200)
 
 
 @app.get("/welcome_session")
