@@ -1,12 +1,18 @@
-from fastapi import FastAPI, Request, HTTPException, Query, Response
+import secrets
+from fastapi import FastAPI, Request, HTTPException, Query, Response, Depends, Cookie, status
 from typing import Optional
-from hashlib import sha512
+from hashlib import sha256, sha512
 from pydantic import BaseModel
 from datetime import date, timedelta
 from fastapi.templating import Jinja2Templates
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 app = FastAPI()
+security = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
+app.secret_key = "veri sikret key"
+app.session = ""
+app.token = ""
 app.counter = 0
 app.patient_id = 0
 app.mock_db = {}
@@ -37,6 +43,35 @@ def root():
 @app.get("/hello")
 def plain_hello_view(request: Request):
     return templates.TemplateResponse("hello.html.j2", {"date": date.today(), "request": request})
+
+
+def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(
+        credentials.username, "4dm1n")
+    correct_password = secrets.compare_digest(
+        credentials.password, "NotSoSecurePa$$")
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return {"name": correct_username, "password": correct_password}
+
+
+@app.post("/login_session", status_code=201)
+def create_session_cookie(response: Response, user=Depends(verify_credentials)):
+    session_token = sha256(
+        f"{user['name']}{user['password']}{app.secret_key}".encode()).hexdigest()
+    app.session = session_token
+    response.set_cookie(key="session_token", value=session_token)
+
+
+@app.post("/login_token", dependencies=[Depends(verify_credentials)], status_code=201)
+def get_session_token():
+    token = secrets.token_urlsafe()
+    app.token = token
+    return {"token": token}
 
 
 @app.get("/hello/{name}")
