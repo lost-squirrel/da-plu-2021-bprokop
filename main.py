@@ -136,7 +136,7 @@ def delete_session(request: Request, session_token: Optional[str] = Cookie(None)
     if app.session and session_token and secrets.compare_digest(app.session, session_token):
         app.session = None
         url = f"/logged_out?format={format}"
-        return RedirectResponse(url, 301)
+        return RedirectResponse(url, 302)
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized session")
@@ -147,7 +147,7 @@ def delete_token(request: Request, token: Optional[str] = None, format: Optional
     if app.token and token and secrets.compare_digest(app.token, token):
         app.token = None
         url = f"/logged_out?format={format}"
-        return RedirectResponse(url, 301)
+        return RedirectResponse(url, 302)
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized session")
