@@ -1,6 +1,6 @@
 import secrets
 from fastapi import FastAPI, Request, HTTPException, Query, Response, Depends, Cookie, status
-from fastapi.responses import PlainTextResponse, HTMLResponse
+from fastapi.responses import PlainTextResponse, HTMLResponse, RedirectResponse
 from typing import Optional
 from hashlib import sha256, sha512
 from pydantic import BaseModel
@@ -94,6 +94,25 @@ def generate_welcome_response(format):
         return PlainTextResponse(content="Welcome!", status_code=200)
 
 
+def generate_logout_response(format):
+    if format == "json":
+        return {"message": "Logged out!"}
+    elif format == "html":
+        html_content = """
+        <html>
+            <head>
+                <title</title>
+            </head>
+            <body>
+                <h1>Logged out!</h1>
+            </body>
+        </html>
+            """
+        return HTMLResponse(content=html_content, status_code=200)
+    else:
+        return PlainTextResponse(content="Logged out!", status_code=200)
+
+
 @app.get("/welcome_session")
 def welcome_session_view(session_token: Optional[str] = Cookie(None), format: Optional[str] = None):
     if app.session and session_token and secrets.compare_digest(app.session, session_token):
@@ -110,6 +129,33 @@ def welcome_token_view(token: Optional[str] = None, format: Optional[str] = None
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Unauthorized token")
+
+
+@app.delete("/logout_session")
+def delete_session(request: Request, session_token: Optional[str] = Cookie(None), format: Optional[str] = ""):
+    if app.session and session_token and secrets.compare_digest(app.session, session_token):
+        app.session = None
+        url = f"/logged_out?format={format}"
+        return RedirectResponse(url, 301)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized session")
+
+
+@app.delete("/logout_token")
+def delete_token(request: Request, token: Optional[str] = None, format: Optional[str] = ""):
+    if app.token and token and secrets.compare_digest(app.token, token):
+        app.token = None
+        url = f"/logged_out?format={format}"
+        return RedirectResponse(url, 301)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized session")
+
+
+@app.delete("/logged_out")
+def logged_out_view(format: Optional[str] = None):
+    return generate_logout_response(format)
 
 
 @app.get("/hello/{name}")
