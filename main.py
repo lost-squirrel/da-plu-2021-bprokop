@@ -7,13 +7,14 @@ from pydantic import BaseModel
 from datetime import date, timedelta
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from collections import deque
 
 app = FastAPI()
 security = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
 app.secret_key = "veri sikret key"
-app.session = None
-app.token = None
+app.sessions = deque([], maxlen=3)
+app.tokens = deque([], maxlen=3)
 app.counter = 0
 app.patient_id = 0
 app.mock_db = {}
@@ -62,16 +63,16 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
 
 @app.post("/login_session", status_code=201)
 def create_session_cookie(response: Response, user=Depends(verify_credentials)):
-    session_token = "token1234"
-    app.session = session_token
+    session_token = secrets.token_urlsafe()
+    app.sessions.appendleft(session_token)
     response.set_cookie(key="session_token", value=session_token)
     return {"user": user["name"]}
 
 
 @app.post("/login_token", status_code=201)
 def get_session_token(response: Response, user=Depends(verify_credentials)):
-    token = "token1234"
-    app.token = token
+    token = secrets.token_urlsafe()
+    app.tokens.appendleft(token)
     return {"token": token}
 
 
@@ -115,7 +116,7 @@ def generate_logout_response(format):
 
 @app.get("/welcome_session")
 def welcome_session_view(session_token: Optional[str] = Cookie(None), format: Optional[str] = None):
-    if app.session and session_token and secrets.compare_digest(app.session, session_token):
+    if session_token in app.sessions:
         return generate_welcome_response(format)
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -124,7 +125,7 @@ def welcome_session_view(session_token: Optional[str] = Cookie(None), format: Op
 
 @app.get("/welcome_token")
 def welcome_token_view(token: Optional[str] = None, format: Optional[str] = None):
-    if app.token and token and secrets.compare_digest(app.token, token):
+    if token in app.tokens:
         return generate_welcome_response(format)
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -133,8 +134,8 @@ def welcome_token_view(token: Optional[str] = None, format: Optional[str] = None
 
 @app.delete("/logout_session")
 def delete_session(request: Request, session_token: Optional[str] = Cookie(None), format: Optional[str] = ""):
-    if app.session and session_token and secrets.compare_digest(app.session, session_token):
-        app.session = None
+    if session_token in app.sessions:
+        app.sessions.remove(session_token)
         url = f"/logged_out?format={format}"
         return RedirectResponse(url, status_code=status.HTTP_302_FOUND)
     else:
@@ -144,8 +145,8 @@ def delete_session(request: Request, session_token: Optional[str] = Cookie(None)
 
 @app.delete("/logout_token")
 def delete_token(request: Request, token: Optional[str] = None, format: Optional[str] = ""):
-    if app.token and token and secrets.compare_digest(app.token, token):
-        app.token = None
+    if token in app.tokens:
+        app.tokens.remove(token)
         url = f"/logged_out?format={format}"
         return RedirectResponse(url, status_code=status.HTTP_302_FOUND)
     else:
