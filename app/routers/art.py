@@ -5,8 +5,8 @@ from fastapi.responses import HTMLResponse
 router = APIRouter(tags=["art"])
 
 
-dir = os.path.dirname(__file__)
-filename = os.path.join(dir, '../decorators/decorators.py')
+directory = os.path.dirname(__file__)
+filename = os.path.join(directory, '../decorators/decorators.py')
 with open(filename, 'r') as decorators:
     data = decorators.read()
 
