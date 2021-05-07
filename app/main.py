@@ -1,4 +1,4 @@
-from app.routers import deploy
+from app.routers import deploy, art
 import secrets
 from fastapi import FastAPI, Request, HTTPException, Query, Response, Depends, Cookie, status
 from fastapi.responses import PlainTextResponse, HTMLResponse, RedirectResponse
@@ -11,6 +11,7 @@ from collections import deque
 
 app = FastAPI()
 app.include_router(deploy.router)
+app.include_router(art.router)
 
 security = HTTPBasic()
 templates = Jinja2Templates(directory="templates")
@@ -60,7 +61,7 @@ def generate_welcome_response(format):
         html_content = """
         <html>
             <head>
-                <title</title>
+                <title></title>
             </head>
             <body>
                 <h1>Welcome!</h1>
