@@ -68,4 +68,4 @@ def patient_view(id: int):
         raise HTTPException(status_code=400)
     if id in router.mock_db:
         return router.mock_db[id]
-        raise HTTPException(status_code=404)
+    raise HTTPException(status_code=404)
