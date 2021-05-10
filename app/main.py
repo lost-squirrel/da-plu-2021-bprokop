@@ -37,7 +37,7 @@ async def customers_view():
     cursor.row_factory = sqlite3.Row
     customers = cursor.execute("""
     SELECT CustomerID as id, COALESCE(CompanyName, '') as name,
-    COALESCE(Address, '') || ' ' || COALESCE(PostalCode, '') || ' ' || COALESCE(City, '') || ' ' || COALESCE(Country, '') as full_adress 
+    COALESCE(Address, '') || ' ' || COALESCE(PostalCode, '') || ' ' || COALESCE(City, '') || ' ' || COALESCE(Country, '') as full_address 
     FROM Customers 
     ORDER BY UPPER(CustomerID)
     """).fetchall()
