@@ -28,7 +28,7 @@ async def categories_view():
     categories = cursor.execute("""
     SELECT CategoryID as id, CategoryName as name
     FROM Categories 
-    ORDER BY CategoryName""").fetchall()
+    ORDER BY UPPER(CategoryName)""").fetchall()
     return {"categories": categories}
 
 @app.get("/customers")
@@ -37,9 +37,9 @@ async def customers_view():
     cursor.row_factory = sqlite3.Row
     customers = cursor.execute("""
     SELECT CustomerID as id, COALESCE(CompanyName, '') as name,
-    (COALESCE(Address, '') || ' ' || COALESCE(PostalCode, '') || ' ' || COALESCE(City, '') || ' ' || COALESCE(Country, '')) as full_adress 
+    COALESCE(Address, '') || ' ' || COALESCE(PostalCode, '') || ' ' || COALESCE(City, '') || ' ' || COALESCE(Country, '') as full_adress 
     FROM Customers 
-    ORDER BY LOWER(CustomerID)
+    ORDER BY UPPER(CustomerID)
     """).fetchall()
     return {"customers": customers}
 
