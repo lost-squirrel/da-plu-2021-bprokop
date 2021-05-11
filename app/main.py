@@ -1,6 +1,7 @@
 import os
 import sqlite3
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from starlette.requests import HTTPConnection
 from app.routers import deploy, art, fast
 
 
@@ -42,4 +43,18 @@ async def customers_view():
     ORDER BY UPPER(CustomerID)
     """).fetchall()
     return {"customers": customers}
+
+@app.get("/products/{id}")
+async def product_view(id: int):
+    cursor = app.db_connection.cursor()
+    cursor.row_factory = sqlite3.Row
+    product = cursor.execute("""
+    SELECT ProductID as id, ProductName as name 
+    FROM Products 
+    WHERE id=:id    
+    """, {"id": id}).fetchone()
+    if not product:
+        raise HTTPException(404)
+    return product
+
 
