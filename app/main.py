@@ -60,9 +60,9 @@ async def product_view(id: int):
 
 @app.get("/employees")
 async def employees_view(order: Optional[str] = None, limit: int = -1, offset: int = 0):
-    order = order or 'id'
-    if order not in {'first_name', 'last_name', 'city', 'id'}:
+    if order not in {'first_name', 'last_name', 'city', None}:
         raise HTTPException(400)
+    order = order or 'id'
     cursor = app.db_connection.cursor()
     cursor.row_factory = sqlite3.Row
     employees = cursor.execute("""
