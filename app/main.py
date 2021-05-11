@@ -12,6 +12,7 @@ app.include_router(deploy.router)
 app.include_router(art.router)
 app.include_router(fast.router)
 
+
 @app.on_event('startup')
 async def startup():
     directory = os.path.dirname(__file__)
@@ -19,9 +20,11 @@ async def startup():
     app.db_connection = sqlite3.connect(filename)
     app.db_connection.text_factory = lambda b: b.decode(errors="ignore")
 
+
 @app.on_event("shutdown")
 async def shutdown():
     app.db_connection.close()
+
 
 @app.get("/categories")
 async def categories_view():
@@ -32,6 +35,7 @@ async def categories_view():
     FROM Categories 
     ORDER BY UPPER(CategoryName)""").fetchall()
     return {"categories": categories}
+
 
 @app.get("/customers")
 async def customers_view():
@@ -45,6 +49,7 @@ async def customers_view():
     """).fetchall()
     return {"customers": customers}
 
+
 @app.get("/products/{id}")
 async def product_view(id: int):
     cursor = app.db_connection.cursor()
@@ -57,6 +62,7 @@ async def product_view(id: int):
     if not product:
         raise HTTPException(404)
     return product
+
 
 @app.get("/employees")
 async def employees_view(order: Optional[str] = None, limit: int = -1, offset: int = 0):
@@ -73,4 +79,14 @@ async def employees_view(order: Optional[str] = None, limit: int = -1, offset: i
     return {"employees": employees}
 
 
-
+@app.get("/products_extended")
+async def products_extended_view():
+    cursor = app.db_connection.cursor()
+    cursor.row_factory = sqlite3.Row
+    products_extended = cursor.execute("""
+    SELECT Products.ProductID as id, Products.ProductName as name, Categories.CategoryName as category, Suppliers.CompanyName as supplier
+    FROM Products
+    JOIN Categories ON Products.CategoryID = Categories.CategoryID
+    JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID
+    """).fetchall()
+    return {"products_extended": products_extended}
