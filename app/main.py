@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from starlette.requests import HTTPConnection
 from app.routers import deploy, art, fast
@@ -56,5 +57,20 @@ async def product_view(id: int):
     if not product:
         raise HTTPException(404)
     return product
+
+@app.get("/employees")
+async def employees_view(order: Optional[str] = None, limit: int = -1, offset: int = 0):
+    order = order or 'id'
+    if order not in {'first_name', 'last_name', 'city', 'id'}:
+        raise HTTPException(400)
+    cursor = app.db_connection.cursor()
+    cursor.row_factory = sqlite3.Row
+    employees = cursor.execute("""
+    SELECT EmployeeID as id, LastName as last_name, FirstName as first_name, City as city
+    FROM Employees
+    ORDER BY {} LIMIT {} OFFSET {}
+    """.format(order, limit, offset)).fetchall()
+    return {"employees": employees}
+
 
 
