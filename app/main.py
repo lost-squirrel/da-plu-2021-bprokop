@@ -32,7 +32,7 @@ async def categories_view():
     cursor.row_factory = sqlite3.Row
     categories = cursor.execute("""
     SELECT CategoryID as id, CategoryName as name
-    FROM Categories 
+    FROM Categories
     ORDER BY UPPER(CategoryName)""").fetchall()
     return {"categories": categories}
 
@@ -43,8 +43,8 @@ async def customers_view():
     cursor.row_factory = sqlite3.Row
     customers = cursor.execute("""
     SELECT CustomerID as id, COALESCE(CompanyName, '') as name,
-    COALESCE(Address, '') || ' ' || COALESCE(PostalCode, '') || ' ' || COALESCE(City, '') || ' ' || COALESCE(Country, '') as full_address 
-    FROM Customers 
+    COALESCE(Address, '') || ' ' || COALESCE(PostalCode, '') || ' ' || COALESCE(City, '') || ' ' || COALESCE(Country, '') as full_address
+    FROM Customers
     ORDER BY UPPER(CustomerID)
     """).fetchall()
     return {"customers": customers}
@@ -55,9 +55,9 @@ async def product_view(id: int):
     cursor = app.db_connection.cursor()
     cursor.row_factory = sqlite3.Row
     product = cursor.execute("""
-    SELECT ProductID as id, ProductName as name 
-    FROM Products 
-    WHERE id=:id    
+    SELECT ProductID as id, ProductName as name
+    FROM Products
+    WHERE id=:id
     """, {"id": id}).fetchone()
     if not product:
         raise HTTPException(404)
@@ -90,3 +90,19 @@ async def products_extended_view():
     JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID
     """).fetchall()
     return {"products_extended": products_extended}
+
+
+@app.get("/products/{id}/orders")
+async def products_orders_view(id: int):
+    cursor = app.db_connection.cursor()
+    cursor.row_factory = sqlite3.Row
+    orders = cursor.execute("""
+    SELECT Orders.OrderID as id, Customers.CompanyName as customer, od.Quantity as quantity, round( od.Quantity * od.UnitPrice * (1-od.Discount) , 2) as total_price
+    FROM Orders
+    JOIN Customers ON Orders.CustomerID = Customers.CustomerID
+    JOIN 'Order Details' od on Orders.OrderID = od.OrderID
+    AND od.ProductID=:id
+    """, {"id": id}).fetchall()
+    if not orders:
+        raise HTTPException(404)
+    return {"orders": orders}
