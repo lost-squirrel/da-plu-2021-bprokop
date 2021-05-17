@@ -1,4 +1,7 @@
+import os
 from fastapi import FastAPI
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from app.routers import deploy, art, fast, table
 
 
