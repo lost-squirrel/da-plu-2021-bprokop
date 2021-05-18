@@ -1,4 +1,4 @@
-from sqlalchemy import asc
+from sqlalchemy import asc, desc
 from sqlalchemy.orm import Session
 
 from . import models
@@ -23,4 +23,11 @@ def get_supplier(db: Session, supplier_id: int):
     return (
         db.query(models.Supplier).filter(
             models.Supplier.SupplierID == supplier_id).first()
+    )
+
+
+def get_supplier_products(db: Session, supplier_id: int):
+    return (
+        db.query(models.Product.ProductID, models.Product.ProductName, models.Category, models.Product.Discontinued).join(models.Category).filter(
+            models.Product.SupplierID == supplier_id).order_by(desc(models.Product.ProductID)) .all()
     )
