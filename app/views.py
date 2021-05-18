@@ -37,7 +37,7 @@ async def get_suppliers(db: Session = Depends(get_db)):
 
 
 @router.post("/suppliers", status_code=201, response_model=schemas.Supplier, response_model_exclude={"Region"})
-async def create_supplier(supplier: schemas.Supplier_In, db: Session = Depends(get_db)):
+async def create_supplier(supplier: schemas.Supplier_Create, db: Session = Depends(get_db)):
     return crud.create_supplier(db, supplier.dict())
 
 
@@ -48,3 +48,11 @@ async def get_supplier_products(supplier_id: PositiveInt, db: Session = Depends(
         raise HTTPException(status_code=404, detail="Supplier not found")
     db_products = crud.get_supplier_products(db, supplier_id)
     return db_products
+
+
+@router.put("/suppliers/{supplier_id}", status_code=200, response_model=schemas.Supplier, response_model_exclude={"Region"})
+async def update_supplier(supplier_id: PositiveInt, supplier: schemas.Supplier_Update, db: Session = Depends(get_db)):
+    updated_supplier = crud.update_supplier(db, supplier_id, supplier)
+    if updated_supplier is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return updated_supplier

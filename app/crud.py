@@ -1,8 +1,8 @@
-from sqlalchemy import asc, desc
+from sqlalchemy import asc, desc, update
 from sqlalchemy.orm import Session
 
 from . import models
-from .schemas import Supplier_In
+from .schemas import Supplier_Create, Supplier_Update
 
 
 def get_shippers(db: Session):
@@ -34,8 +34,17 @@ def get_supplier_products(db: Session, supplier_id: int):
     )
 
 
-def create_supplier(db: Session, supplier_in: Supplier_In):
+def create_supplier(db: Session, supplier_in: Supplier_Create):
     newSupplier = models.Supplier(**supplier_in)
     db.add(newSupplier)
     db.commit()
     return newSupplier
+
+
+def update_supplier(db: Session, supplier_id: int, supplier: Supplier_Update):
+    values = {k: v for k, v in supplier.dict().items() if v is not None}
+    stmt = update(models.Supplier).where(
+        models.Supplier.SupplierID == supplier_id).values(values).execution_options(synchronize_session="fetch")
+    db.execute(stmt)
+    db.commit()
+    return get_supplier(db, supplier_id)
