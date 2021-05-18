@@ -36,6 +36,11 @@ async def get_suppliers(db: Session = Depends(get_db)):
     return crud.get_suppliers(db)
 
 
+@router.post("/suppliers", status_code=201, response_model=schemas.Supplier, response_model_exclude={"Region"})
+async def create_supplier(supplier: schemas.Supplier_In, db: Session = Depends(get_db)):
+    return crud.create_supplier(db, supplier.dict())
+
+
 @router.get("/suppliers/{supplier_id}/products", response_model=List[schemas.Product])
 async def get_supplier_products(supplier_id: PositiveInt, db: Session = Depends(get_db)):
     db_supplier = crud.get_supplier(db, supplier_id)

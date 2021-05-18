@@ -2,6 +2,7 @@ from sqlalchemy import asc, desc
 from sqlalchemy.orm import Session
 
 from . import models
+from .schemas import Supplier_In
 
 
 def get_shippers(db: Session):
@@ -31,3 +32,10 @@ def get_supplier_products(db: Session, supplier_id: int):
         db.query(models.Product.ProductID, models.Product.ProductName, models.Category, models.Product.Discontinued).join(models.Category).filter(
             models.Product.SupplierID == supplier_id).order_by(desc(models.Product.ProductID)) .all()
     )
+
+
+def create_supplier(db: Session, supplier_in: Supplier_In):
+    newSupplier = models.Supplier(**supplier_in)
+    db.add(newSupplier)
+    db.commit()
+    return newSupplier
