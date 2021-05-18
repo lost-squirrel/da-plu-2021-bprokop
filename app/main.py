@@ -1,8 +1,6 @@
-import os
 from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.routers import deploy, art, fast, table
+from .views import router as northwind_api_router
 
 
 app = FastAPI()
@@ -11,6 +9,7 @@ app.include_router(deploy.router)
 app.include_router(art.router)
 app.include_router(fast.router)
 app.include_router(table.router)
+app.include_router(northwind_api_router, tags=["northwind"])
 
 
 @app.on_event('startup')
