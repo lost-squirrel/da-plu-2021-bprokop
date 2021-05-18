@@ -43,8 +43,9 @@ def create_supplier(db: Session, supplier_in: Supplier_Create):
 
 def update_supplier(db: Session, supplier_id: int, supplier: Supplier_Update):
     values = {k: v for k, v in supplier.dict().items() if v is not None}
-    stmt = update(models.Supplier).where(
-        models.Supplier.SupplierID == supplier_id).values(values).execution_options(synchronize_session="fetch")
-    db.execute(stmt)
-    db.commit()
+    if values:
+        stmt = update(models.Supplier).where(
+            models.Supplier.SupplierID == supplier_id).values(values).execution_options(synchronize_session="fetch")
+        db.execute(stmt)
+        db.commit()
     return get_supplier(db, supplier_id)
