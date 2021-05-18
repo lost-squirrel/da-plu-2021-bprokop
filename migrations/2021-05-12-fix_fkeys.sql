@@ -1,5 +1,5 @@
 ALTER TABLE products
-ADD FOREIGN KEY ("SupplierID") REFERENCES suppliers("SupplierID");
+ADD FOREIGN KEY ("SupplierID") REFERENCES suppliers("SupplierID") ON DELETE SET NULL;
 
 ALTER TABLE products
 ADD FOREIGN KEY ("CategoryID") REFERENCES categories("CategoryID");

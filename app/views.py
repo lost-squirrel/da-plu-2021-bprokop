@@ -56,3 +56,10 @@ async def update_supplier(supplier_id: PositiveInt, supplier: schemas.Supplier_U
     if updated_supplier is None:
         raise HTTPException(status_code=404, detail="Supplier not found")
     return updated_supplier
+
+
+@router.delete("/suppliers/{supplier_id}", status_code=204)
+async def delete_supplier(supplier_id: PositiveInt, db: Session = Depends(get_db)):
+    if crud.get_supplier(db, supplier_id) is None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return crud.delete_supplier(db, supplier_id)

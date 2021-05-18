@@ -1,5 +1,6 @@
 from sqlalchemy import asc, desc, update
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import delete
 
 from . import models
 from .schemas import Supplier_Create, Supplier_Update
@@ -49,3 +50,11 @@ def update_supplier(db: Session, supplier_id: int, supplier: Supplier_Update):
         db.execute(stmt)
         db.commit()
     return get_supplier(db, supplier_id)
+
+
+def delete_supplier(db: Session, supplier_id: int):
+    stmt = delete(models.Supplier).where(models.Supplier.SupplierID == supplier_id).execution_options(
+        synchronize_session="fetch")
+    db.execute(stmt)
+    db.commit()
+    return

@@ -182,7 +182,8 @@ class Product(Base):
     ProductID = Column(SmallInteger, primary_key=True, server_default=text(
         "nextval('products_productid_seq'::regclass)"))
     ProductName = Column(String(40), nullable=False)
-    SupplierID = Column(ForeignKey('suppliers.SupplierID'))
+    SupplierID = Column(ForeignKey(
+        'suppliers.SupplierID', ondelete='SET NULL'), nullable=True)
     CategoryID = Column(ForeignKey('categories.CategoryID'))
     QuantityPerUnit = Column(String(20))
     UnitPrice = Column(Float)
